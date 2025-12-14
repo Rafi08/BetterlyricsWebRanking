@@ -23,7 +23,8 @@ const Content = () => {
     addSongToCategory,
     updateCategoryName,
     addCategory,
-    removeCategory
+    removeCategory,
+    reorderSongs
   } = useRanking();
 
   // Playlist Selection State
@@ -184,6 +185,7 @@ const Content = () => {
               onUpdateCategoryName={updateCategoryName}
               onAddCategory={addCategory}
               onRemoveCategory={removeCategory}
+              reorderSongs={reorderSongs}
               currentTrack={currentTrack}
             />
           </div>

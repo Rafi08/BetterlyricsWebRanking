@@ -58,11 +58,24 @@ export const useRanking = () => {
         setCategories(prev => prev.filter(c => c.id !== categoryId));
     };
 
+    const reorderSongs = (categoryId: string, startIndex: number, endIndex: number) => {
+        setCategories(prev => prev.map(cat => {
+            if (cat.id !== categoryId) return cat;
+
+            const newSongs = Array.from(cat.songs);
+            const [reorderedItem] = newSongs.splice(startIndex, 1);
+            newSongs.splice(endIndex, 0, reorderedItem);
+
+            return { ...cat, songs: newSongs };
+        }));
+    };
+
     return {
         categories,
         addSongToCategory,
         updateCategoryName,
         addCategory,
-        removeCategory
+        removeCategory,
+        reorderSongs
     };
 };

@@ -8,6 +8,7 @@ interface RankingTableProps {
     onUpdateCategoryName: (categoryId: string, newName: string) => void;
     onAddCategory: () => void;
     onRemoveCategory: (categoryId: string) => void;
+    reorderSongs: (categoryId: string, startIndex: number, endIndex: number) => void;
     currentTrack: any; // Passed for dragging context if needed
 }
 
@@ -16,7 +17,8 @@ const RankingTable: React.FC<RankingTableProps> = ({
     onDropSong,
     onUpdateCategoryName,
     onAddCategory,
-    onRemoveCategory
+    onRemoveCategory,
+    reorderSongs
 }) => {
     const [dragOverCategory, setDragOverCategory] = useState<string | null>(null);
 
@@ -135,6 +137,38 @@ const RankingTable: React.FC<RankingTableProps> = ({
                                         animate={{ opacity: 1, scale: 1 }}
                                         exit={{ opacity: 0, scale: 0.5 }}
                                         title={`${song.name} - ${song.artist}`}
+                                        draggable
+                                        onDragStart={(e) => {
+                                            e.dataTransfer.setData('reorder/json', JSON.stringify({
+                                                categoryId: category.id,
+                                                index: category.songs.indexOf(song) // We can use map index if needed, but this is safe for now
+                                            }));
+                                            e.dataTransfer.effectAllowed = 'move';
+                                        }}
+                                        onDragOver={(e) => {
+                                            e.preventDefault(); // Allow drop
+                                        }}
+                                        onDrop={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation(); // Prevent category drop logic
+
+                                            try {
+                                                const reorderData = e.dataTransfer.getData('reorder/json');
+                                                if (reorderData) {
+                                                    const { categoryId: srcCatId, index: srcIndex } = JSON.parse(reorderData);
+
+                                                    // Only allow reordering within the same category for now (simplifies UX)
+                                                    if (srcCatId === category.id) {
+                                                        const targetIndex = category.songs.indexOf(song);
+                                                        if (srcIndex !== targetIndex) {
+                                                            reorderSongs(category.id, srcIndex, targetIndex);
+                                                        }
+                                                    }
+                                                }
+                                            } catch (err) {
+                                                // Ignore if not reorder data
+                                            }
+                                        }}
                                         style={{
                                             width: '50px',
                                             height: '50px',
@@ -147,7 +181,7 @@ const RankingTable: React.FC<RankingTableProps> = ({
                                         <img
                                             src={song.cover}
                                             alt={song.name}
-                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }}
                                         />
                                     </motion.div>
                                 ))}
