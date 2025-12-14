@@ -139,11 +139,12 @@ const RankingTable: React.FC<RankingTableProps> = ({
                                         title={`${song.name} - ${song.artist}`}
                                         draggable
                                         onDragStart={(e) => {
-                                            e.dataTransfer.setData('reorder/json', JSON.stringify({
+                                            const event = e as unknown as React.DragEvent<HTMLDivElement>;
+                                            event.dataTransfer.setData('reorder/json', JSON.stringify({
                                                 categoryId: category.id,
-                                                index: category.songs.indexOf(song) // We can use map index if needed, but this is safe for now
+                                                index: category.songs.indexOf(song)
                                             }));
-                                            e.dataTransfer.effectAllowed = 'move';
+                                            event.dataTransfer.effectAllowed = 'move';
                                         }}
                                         onDragOver={(e) => {
                                             e.preventDefault(); // Allow drop
@@ -152,8 +153,9 @@ const RankingTable: React.FC<RankingTableProps> = ({
                                             e.preventDefault();
                                             e.stopPropagation(); // Prevent category drop logic
 
+                                            const event = e as unknown as React.DragEvent<HTMLDivElement>;
                                             try {
-                                                const reorderData = e.dataTransfer.getData('reorder/json');
+                                                const reorderData = event.dataTransfer.getData('reorder/json');
                                                 if (reorderData) {
                                                     const { categoryId: srcCatId, index: srcIndex } = JSON.parse(reorderData);
 
